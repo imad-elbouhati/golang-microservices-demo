@@ -35,7 +35,7 @@ func main() {
 		Models: data.New(conn),
 	}
 
-	log.Panicln("Starting authentication service")
+	log.Println("Starting authentication service")
 	srv := &http.Server {
 		Addr: fmt.Sprintf(":%s", webPort),
 		Handler: app.routes(),
