@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 )
 
@@ -49,7 +50,7 @@ func (app *Config) handleSubmession(w http.ResponseWriter, r *http.Request) {
 func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload)  {
 	jsonData, _ :=  json.MarshalIndent(a,"","\t")
 
-	request, err := http.NewRequest("POST","http://authenticate-service/authenticate",bytes.NewBuffer(jsonData))
+	request, err := http.NewRequest("POST","http://authentication-service/authenticate",bytes.NewBuffer(jsonData))
 
 	if err != nil {
 		app.errorJSON(w, err)
@@ -70,7 +71,7 @@ func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload)  {
 		app.errorJSON(w, errors.New("invalid credentials"))
 		return
 	}else if response.StatusCode != http.StatusAccepted {
-		app.errorJSON(w, errors.New("error calling auth service"))
+		app.errorJSON(w, errors.New(fmt.Sprintf("error calling auth service %d\n ",response.StatusCode)))
 		return
 	}
 
