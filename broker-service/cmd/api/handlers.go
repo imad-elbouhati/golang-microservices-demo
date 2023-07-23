@@ -48,11 +48,49 @@ func (app *Config) handleSubmession(w http.ResponseWriter, r *http.Request) {
 		app.authenticate(w,requestPayload.Auth)
 	case "log":
 		app.logItem(w, requestPayload.Log)
+	case "logs":
+		app.getItems(w)	
 	default:
 		app.errorJSON(w,errors.New("unknown action"))
 
 	}
  }
+
+func (app *Config) getItems(w http.ResponseWriter) {
+	request, err := http.NewRequest("GET","http://logger-service/logs",nil)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+	
+	client := &http.Client{}
+	response, err := client.Do(request)
+
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		app.errorJSON(w, errors.New("ERROR GETTING LOGS"))
+		return
+	}
+
+	var jsonFromSevice jsonResponse
+
+	err = json.NewDecoder(response.Body).Decode(&jsonFromSevice)
+	if err != nil {
+		app.errorJSON(w, errors.New("ERROR DECODING LOG JSON"))
+		return
+	}
+
+	var payload jsonResponse
+	payload.Error = false
+	payload.Data = jsonFromSevice.Data
+	app.writeJSON(w, http.StatusOK, payload)
+}
 
 func (app *Config) logItem(w http.ResponseWriter, l LogPayload) {
 	jsonData, _ := json.MarshalIndent(l,"","\t")

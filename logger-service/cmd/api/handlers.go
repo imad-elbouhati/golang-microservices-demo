@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"log-service/data"
 	"net/http"
 )
@@ -32,4 +33,21 @@ func (app *Config) WriteLog(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.writeJSON(w, http.StatusAccepted, resp)
+}
+
+func (app *Config) GetLogs(w http.ResponseWriter, r *http.Request) {
+	
+	logs, err := app.Models.LogEntry.All()
+	if err != nil {
+		log.Printf("Error logger-service: %s",err)
+		app.errorJSON(w, err)
+		return
+	}
+
+	resp := jsonResponse {
+		Error: false,
+		Data: logs,
+	}
+
+	app.writeJSON(w, http.StatusOK, resp)
 }
