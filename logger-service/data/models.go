@@ -34,7 +34,7 @@ type LogEntry struct  {
 }
 
 
-func (l *LogEntry) insert(entry LogEntry) error {
+func (l *LogEntry) Insert(entry LogEntry) error {
 	collection := client.Database("logs").Collection("logs")
 	_, err := collection.InsertOne(context.TODO(),LogEntry{
 		Name: entry.Data,
