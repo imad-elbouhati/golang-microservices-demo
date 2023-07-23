@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -41,6 +43,43 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request)  {
 		Error: false,
 		Message: fmt.Sprintf("Logged in user %s", user.Email),
 	}
-
+	//log authentication:
+	err = app.logRequest("authentication", fmt.Sprintf("%s logged in",user.Email))
+	if err != nil {
+		app.errorJSON(w,err)
+		return
+	}
 	app.writeJSON(w,http.StatusAccepted,payload)
+}
+
+
+func (app *Config) logRequest(name string, data string) error {
+	var entry struct {
+		Name string `json:"name"`
+		Data string `json:"data"`
+	}
+
+	entry.Name = name
+	entry.Data = data
+
+	jsonData, _ := json.MarshalIndent(entry,"","\t")
+	loggerURL := "http://logger-service/log"
+	
+	request, err := http.NewRequest("POST",loggerURL,bytes.NewBuffer(jsonData))
+	if err != nil {
+		
+		return err
+	}
+	
+	client := &http.Client{}
+	response, err := client.Do(request)
+
+	if err != nil {
+		return err
+	}
+
+	defer response.Body.Close()
+
+
+	return nil
 }
